@@ -13,7 +13,8 @@ import org.scalatest.junit.JUnitRunner
  *  - right-click the file in eclipse and chose "Run As" - "JUnit Test"
  */
 @RunWith(classOf[JUnitRunner])
-class FunSetSuite extends FunSuite {
+class
+FunSetSuite extends FunSuite {
 
   /**
    * Link to the scaladoc - very clear and detailed tutorial of FunSuite
@@ -107,6 +108,74 @@ class FunSetSuite extends FunSuite {
       assert(contains(s, 1), "Union 1")
       assert(contains(s, 2), "Union 2")
       assert(!contains(s, 3), "Union 3")
+    }
+  }
+
+  test("intersection contains all elements that are in both sets") {
+    new TestSets {
+      val s = union(union(s1, s2), s3)
+      val s1231 = intersect(s1, s)
+      val s1232 = intersect(s2, s)
+      val s1233 = intersect(s3, s)
+
+      assert(contains(s1231, 1), "Intersection 1")
+      assert(contains(intersect(s1232, s), 2), "Intersection 2")
+      assert(contains(intersect(s1233, s), 3), "Intersection 3")
+      assert(!contains(s1231, 2), "Intersection 1")
+      assert(!contains(intersect(s1232, s), 3), "Intersection 2")
+      assert(!contains(intersect(s1233, s), 1), "Intersection 3")
+    }
+  }
+
+  test("diff contains all elements in both sets minus the intersection") {
+    new TestSets {
+      val s = diff(union(union(s1, s2), s3), s2)
+
+      assert(contains(s, 1), "diff 1")
+      assert(contains(s, 3), "diff 2")
+      assert(!contains(s, 2), "diff 3")
+    }
+  }
+
+  test("filter contains all elements in the set accepted by a predicate") {
+    new TestSets {
+      val s = filter(union(union(s1, s2), s3), (x:Int) => x>1)
+
+      assert(contains(s, 2), "filter 1")
+      assert(contains(s, 3), "filter 2")
+      assert(!contains(s, 1), "filter 3")
+    }
+  }
+
+  test("forall returns whether all bounded integers within the set satisfy a predicate") {
+    new TestSets {
+      val s = union(union(s1, s2), s3)
+
+      assert(forall(s, (x:Int) => x > 0), "forall 1")
+      assert(!forall(s, (x:Int) => x > 2), "forall 2")
+    }
+  }
+
+  test("exists returns if a member of the sets satisfies a predicate") {
+    new TestSets {
+      val s = union(union(s1, s2), s3)
+
+      assert(exists(s, (x:Int) => x > 0), "exists 1")
+      assert(exists(s, (x:Int) => x > 2), "exists 2")
+      assert(!exists(s, (x:Int) => x > 3), "exists 3")
+    }
+  }
+
+  test("map returns a set with a function applied to each element") {
+    new TestSets {
+      val s = map(union(union(s1, s2), s3), (x:Int) => x + 5)
+
+      assert(!contains(s, 1), "map 1")
+      assert(!contains(s, 2), "map 2")
+      assert(!contains(s, 3), "map 3")
+      assert(contains(s, 6), "map 4")
+      assert(contains(s, 7), "map 5")
+      assert(contains(s, 8), "map 6")
     }
   }
 
