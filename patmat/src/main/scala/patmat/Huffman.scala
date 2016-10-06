@@ -142,7 +142,6 @@ object Huffman {
     def combine(trees: List[CodeTree]): List[CodeTree] = trees match {
       case Nil => Nil
       case List(x) => trees
-      case List(x, y) => trees
       case (x::y::xs) => List(Fork(x, y, chars(x) ::: chars(y), weight(x) + weight(y))) ::: combine(xs)
   }
   
@@ -270,9 +269,13 @@ object Huffman {
    * a valid code tree that can be represented as a code table. Using the code tables of the
    * sub-trees, think of how to build the code table for the entire tree.
    */
-    def convert(tree: CodeTree): CodeTable = tree match {
-      case Leaf(_, _) => List()
-      case Fork(l, r, _, _) => mergeCodeTables(convert(l), convert(r))
+    def convert(tree: CodeTree): CodeTable = {
+      def acumBits(tree: CodeTree, bits: List[Bit]): CodeTable = tree match {
+        case Leaf(c, _) => List((c, bits))
+        case Fork(l, r, _, _) => mergeCodeTables(acumBits(l, bits ::: List(0)), acumBits(r, bits ::: List(1)))
+      }
+
+      acumBits(tree, List())
     }
   
   /**
@@ -281,7 +284,7 @@ object Huffman {
    * on the two parameter code tables.
    */
     def mergeCodeTables(a: CodeTable, b: CodeTable): CodeTable = {
-      
+      a ::: b
     }
   
   /**
@@ -290,5 +293,19 @@ object Huffman {
    * To speed up the encoding process, it first converts the code tree to a code table
    * and then uses it to perform the actual encoding.
    */
-    def quickEncode(tree: CodeTree)(text: List[Char]): List[Bit] = ???
+    def quickEncode(tree: CodeTree)(text: List[Char]): List[Bit] = {
+      def encodeWith(table: CodeTable, text: List[Char]): List[Bit] = {
+        text match {
+          case List(x) => codeBits(table)(x)
+          case (x::xs) => codeBits(table)(x) ::: encodeWith(table, xs)
+        }
+      }
+
+      val table = convert(tree)
+
+      text match {
+        case Nil => Nil
+        case (x::xs) => encodeWith(table, xs)
+      }
+    }
   }
