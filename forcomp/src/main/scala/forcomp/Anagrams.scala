@@ -81,7 +81,22 @@ object Anagrams {
    *  Note that the order of the occurrence list subsets does not matter -- the subsets
    *  in the example above could have been displayed in some other order.
    */
-  def combinations(occurrences: Occurrences): List[Occurrences] = ???
+  def combinations(occurrences: Occurrences): List[Occurrences] = {
+    def elementCombinations(occurrences: Occurrences, result: List[Occurrences]): List[Occurrences] = {
+
+      occurrences match {
+        case(List()) => result.toSet.toList
+        case(firstOccurrence::xs) => {
+          val generationList = (1 to firstOccurrence._2).map(x => (firstOccurrence._1, x)).toList
+          val resultList = result.filter(x => x.size == 1)
+          val combinations:List[Occurrences] = for (generatedPair <- generationList; resultPair <- resultList) yield List(generatedPair, resultPair.head)
+          elementCombinations(xs, result ::: combinations)
+        }
+      }
+    }
+    val initial = List(List())
+    elementCombinations(occurrences, initial)
+  }
 
   /** Subtracts occurrence list `y` from occurrence list `x`.
    *
